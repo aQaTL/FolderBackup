@@ -1,15 +1,16 @@
-package com.aqatl.folderbackup;
+package com.aqatl.folderbackup.archive;
 
 import net.sf.sevenzipjbinding.IOutCreateCallback;
 import net.sf.sevenzipjbinding.IOutItemAllFormats;
 import net.sf.sevenzipjbinding.ISequentialInStream;
 import net.sf.sevenzipjbinding.SevenZipException;
+import net.sf.sevenzipjbinding.impl.InputStreamSequentialInStream;
 import net.sf.sevenzipjbinding.impl.OutItemFactory;
-import net.sf.sevenzipjbinding.util.ByteArrayStream;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.nio.file.Files;
 import java.util.Date;
 import java.util.List;
 
@@ -19,7 +20,6 @@ import java.util.List;
 public class ArchiveItemCallback implements IOutCreateCallback<IOutItemAllFormats> {
 	private List<File> files;
 	private String basePath;
-	private byte[][] data;
 
 	private long total = 0;
 
@@ -31,7 +31,6 @@ public class ArchiveItemCallback implements IOutCreateCallback<IOutItemAllFormat
 		this.basePath = basePath;
 		this.onOperationCompleted = onOperationCompleted;
 		this.onProgressUpdate = onProgressUpdate;
-		data = new byte[files.size()][];
 	}
 
 	@Override
@@ -43,19 +42,8 @@ public class ArchiveItemCallback implements IOutCreateCallback<IOutItemAllFormat
 	public IOutItemAllFormats getItemInformation(int index, OutItemFactory<IOutItemAllFormats> outItemFactory) throws SevenZipException {
 		IOutItemAllFormats outItem = outItemFactory.createOutItem();
 		File file = files.get(index);
-		if (file.isDirectory()) {
-			outItem.setPropertyIsDir(true);
-			outItem.setDataSize((long) 0);
-			data[index] = new byte[]{};
-		} else {
-			try {
-				data[index] = Files.readAllBytes(file.toPath());
-			}
-			catch (IOException e) {
-				e.printStackTrace();
-			}
-		}
-		outItem.setDataSize((long) data[index].length);
+		outItem.setPropertyIsDir(file.isDirectory());
+		outItem.setDataSize(file.length());
 		outItem.setPropertyPath(file.getPath().substring(basePath.length() + 1, file.getPath().length()));
 		outItem.setPropertyCreationTime(new Date());
 		return outItem;
@@ -63,7 +51,12 @@ public class ArchiveItemCallback implements IOutCreateCallback<IOutItemAllFormat
 
 	@Override
 	public ISequentialInStream getStream(int index) throws SevenZipException {
-		return new ByteArrayStream(data[index], true);
+		try {
+			return new InputStreamSequentialInStream(new FileInputStream(files.get(index)));
+		}
+		catch (FileNotFoundException e) {
+			throw new SevenZipException(e);
+		}
 	}
 
 	@Override
@@ -77,10 +70,3 @@ public class ArchiveItemCallback implements IOutCreateCallback<IOutItemAllFormat
 	}
 }
 
-interface OnOperationCompleted {
-	void operationCompleted(boolean success);
-}
-
-interface OnProgressUpdate {
-	void progressUpdated(long completed, long total);
-}

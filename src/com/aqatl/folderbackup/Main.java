@@ -1,5 +1,6 @@
 package com.aqatl.folderbackup;
 
+import com.aqatl.folderbackup.archive.Archiver;
 import javafx.application.Application;
 import javafx.event.EventHandler;
 import javafx.fxml.FXMLLoader;

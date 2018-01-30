@@ -1,4 +1,4 @@
-package com.aqatl.folderbackup;
+package com.aqatl.folderbackup.archive;
 
 import net.sf.sevenzipjbinding.*;
 import net.sf.sevenzipjbinding.impl.RandomAccessFileOutStream;

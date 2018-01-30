@@ -1,5 +1,6 @@
 package com.aqatl.folderbackup;
 
+import com.aqatl.folderbackup.archive.Archiver;
 import javafx.concurrent.Task;
 import javafx.fxml.FXML;
 import javafx.scene.control.Alert;
