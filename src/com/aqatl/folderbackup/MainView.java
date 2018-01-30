@@ -98,8 +98,10 @@ public class MainView {
 		outputPath.setEditable(false);
 
 		stage.setOnCloseRequest(event -> {
-			if (archiveTask != null)
+			if (archiveTask != null) {
 				archiveTask.cancel();
+				outputFile.delete();
+			}
 		});
 	}
 
@@ -129,8 +131,26 @@ public class MainView {
 		}
 	}
 
+	private enum ArchiveButtonMode { START, STOP };
+	private ArchiveButtonMode archiveButtonMode = ArchiveButtonMode.START;
+
 	@FXML
-	private void archive(MouseEvent event) {
+	private void archiveButtonAction(MouseEvent event) {
+		switch (archiveButtonMode) {
+			case START:
+				startArchiving();
+				archiveButton.setText("Stop");
+				archiveButtonMode = ArchiveButtonMode.STOP;
+			break;
+			case STOP:
+				stopArchiving();
+				archiveButton.setText("Archive");
+				archiveButtonMode = ArchiveButtonMode.START;
+			break;
+		}
+	}
+
+	private void startArchiving() {
 		archiveTask = new Task<Boolean>() {
 			@Override
 			protected Boolean call() throws Exception {
@@ -154,6 +174,12 @@ public class MainView {
 		archivingProgressBar.progressProperty().bind(archiveTask.progressProperty());
 
 		new Thread(archiveTask).start();
+	}
+
+	private void stopArchiving() {
+		archiveTask.cancel();
+		archivingProgressBar.setProgress(0.0);
+		outputFile.delete();
 	}
 
 	private void showArchivingCompletedAlert(boolean success) {

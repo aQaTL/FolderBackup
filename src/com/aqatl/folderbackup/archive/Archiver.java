@@ -39,6 +39,9 @@ public class Archiver {
 		if (archive instanceof IOutFeatureSetLevel) {
 			((IOutFeatureSetLevel) archive).setLevel(9);
 		}
+		if (archive instanceof IOutFeatureSetMultithreading) {
+			((IOutFeatureSetMultithreading) archive).setThreadCount(Runtime.getRuntime().availableProcessors());
+		}
 		RandomAccessFile outputFile = new RandomAccessFile(output, "rw");
 
 		try {
