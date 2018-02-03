@@ -135,8 +135,9 @@ public class MainView {
 
 	@FXML
 	private void selectOutputFile(MouseEvent event) {
-		outputFile = fileChooser.showSaveDialog(stage);
-		if (outputFile != null) {
+		File selectedFile = fileChooser.showSaveDialog(stage);
+		if (selectedFile != null) {
+			outputFile = selectedFile;
 			outputPath.setText(outputFile.getAbsolutePath());
 		}
 	}
@@ -145,18 +146,28 @@ public class MainView {
 
 	private ArchiveButtonMode archiveButtonMode = ArchiveButtonMode.START;
 
-	@FXML
-	private void archiveButtonAction(MouseEvent event) {
+	private void toggleArchiveButton() {
 		switch (archiveButtonMode) {
 			case START:
-				startArchiving();
-				archiveButton.setText("Stop");
 				archiveButtonMode = ArchiveButtonMode.STOP;
+				archiveButton.setText("Stop");
 				break;
 			case STOP:
-				stopArchiving();
-				archiveButton.setText("Archive");
 				archiveButtonMode = ArchiveButtonMode.START;
+				archiveButton.setText("Archive");
+				break;
+		}
+	}
+
+	@FXML
+	private void archiveButtonAction(MouseEvent event) {
+		toggleArchiveButton();
+		switch (archiveButtonMode) {
+			case START:
+				stopArchiving();
+				break;
+			case STOP:
+				startArchiving();
 				break;
 		}
 	}
@@ -174,15 +185,18 @@ public class MainView {
 		};
 		archiveTask.setOnSucceeded(workerStateEvent -> {
 			archivingProgressBar.progressProperty().unbind();
+			archivingProgressBar.setProgress(0.0);
 			showArchivingCompletedAlert(archiveTask.getValue());
-			archiveButton.setText("Archive");
+			toggleArchiveButton();
 		});
 		archiveTask.setOnFailed(workerStateEvent -> {
 			archivingProgressBar.progressProperty().unbind();
 			Main.throwExceptionAndExit((Exception) archiveTask.getException());
 		});
-		archiveTask.setOnCancelled(workerStateEvent ->
-				archivingProgressBar.progressProperty().unbind());
+		archiveTask.setOnCancelled(workerStateEvent -> {
+			archivingProgressBar.progressProperty().unbind();
+			toggleArchiveButton();
+		});
 
 		archivingProgressBar.progressProperty().bind(archiveTask.progressProperty());
 

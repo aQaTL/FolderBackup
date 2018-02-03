@@ -27,7 +27,7 @@
           <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
         </rowConstraints>
          <children>
-            <TextField fx:id="inputPath" alignment="CENTER" prefHeight="15.0" prefWidth="216.0" />
+            <TextField fx:id="inputPath" prefHeight="15.0" prefWidth="216.0" />
             <Button fx:id="inputSelectButton" mnemonicParsing="false" onMouseClicked="#selectInputFile" GridPane.columnIndex="1" />
          </children>
          <opaqueInsets>
@@ -44,7 +44,7 @@
             <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
          </rowConstraints>
          <children>
-            <TextField fx:id="outputPath" alignment="CENTER" prefHeight="15.0" prefWidth="216.0" />
+            <TextField fx:id="outputPath" prefHeight="15.0" prefWidth="216.0" />
             <Button fx:id="outputSelectButton" mnemonicParsing="false" onMouseClicked="#selectOutputFile" GridPane.columnIndex="1" />
          </children>
          <opaqueInsets>
