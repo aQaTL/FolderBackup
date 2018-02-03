@@ -1,6 +1,7 @@
 package com.aqatl.folderbackup;
 
 import com.aqatl.folderbackup.archive.Archiver;
+import com.aqatl.folderbackup.archive.CompressionLevel;
 import javafx.application.Application;
 import javafx.event.EventHandler;
 import javafx.fxml.FXMLLoader;
@@ -28,6 +29,7 @@ public class Main extends Application {
 			mainScene = new Scene(loader.load());
 
 			Archiver archiver = new Archiver();
+			archiver.setCompressionLevel(CompressionLevel.DEFAULT);
 			properties = loadProperties();
 			loader.<MainView>getController().init(primaryStage, archiver, properties);
 
@@ -57,7 +59,6 @@ public class Main extends Application {
 		Properties properties = new Properties();
 
 		properties.setProperty("last-input-file", "");
-		properties.setProperty("last-compression-level", "5");
 
 		File propertiesFile = new File("app.properties");
 		if (propertiesFile.exists()) {

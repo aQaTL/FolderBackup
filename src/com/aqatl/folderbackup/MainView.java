@@ -35,8 +35,6 @@ public class MainView {
 	@FXML
 	private Button outputSelectButton;
 	@FXML
-	private ComboBox<CompressionLevel> compressionLevelBox;
-	@FXML
 	private Button archiveButton;
 	@FXML
 	private ProgressBar archivingProgressBar;
@@ -92,20 +90,6 @@ public class MainView {
 			updateOutputFile();
 		}
 		outputPath.setEditable(false);
-
-		compressionLevelBox.getItems().setAll(CompressionLevel.values());
-		compressionLevelBox.getItems().remove(CompressionLevel.DEFAULT);
-
-		compressionLevelBox.getSelectionModel().select(
-				Arrays.stream(CompressionLevel.values()).
-						filter(level ->
-								level.level == Integer.parseInt(properties.getProperty("last-compression-level"))).
-						findFirst().
-						get());
-
-		compressionLevelBox.getSelectionModel().selectedItemProperty().addListener(
-				(observable, oldValue, newValue) -> properties.setProperty(
-						"last-compression-level", Integer.toString(newValue.level)));
 
 		stage.setOnCloseRequest(event -> {
 			if (archiveTask != null) {
@@ -177,7 +161,6 @@ public class MainView {
 			@Override
 			protected Boolean call() throws Exception {
 				archiver.setOnProgressUpdate(this::updateProgress);
-				archiver.setCompressionLevel(compressionLevelBox.getValue());
 				return archiver.archive(
 						inputFile, outputFile,
 						selectedArchiveFormat());
