@@ -92,7 +92,7 @@ public class MainView {
 		outputPath.setEditable(false);
 
 		stage.setOnCloseRequest(event -> {
-			if (archiveTask != null) {
+			if (archiveTask != null && !archiveTask.isDone()) {
 				archiveTask.cancel();
 				outputFile.delete();
 			}
@@ -176,10 +176,7 @@ public class MainView {
 			archivingProgressBar.progressProperty().unbind();
 			Main.throwExceptionAndExit((Exception) archiveTask.getException());
 		});
-		archiveTask.setOnCancelled(workerStateEvent -> {
-			archivingProgressBar.progressProperty().unbind();
-			toggleArchiveButton();
-		});
+		archiveTask.setOnCancelled(workerStateEvent -> archivingProgressBar.progressProperty().unbind());
 
 		archivingProgressBar.progressProperty().bind(archiveTask.progressProperty());
 
