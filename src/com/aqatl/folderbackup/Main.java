@@ -56,7 +56,8 @@ public class Main extends Application {
 	private Properties loadProperties() throws IOException {
 		Properties properties = new Properties();
 
-		properties.put("last-input-file", "");
+		properties.setProperty("last-input-file", "");
+		properties.setProperty("last-compression-level", "5");
 
 		File propertiesFile = new File("app.properties");
 		if (propertiesFile.exists()) {

@@ -1,6 +1,7 @@
 package com.aqatl.folderbackup.archive;
 
 import net.sf.sevenzipjbinding.*;
+import net.sf.sevenzipjbinding.impl.RandomAccessFileInStream;
 import net.sf.sevenzipjbinding.impl.RandomAccessFileOutStream;
 
 import java.io.File;
@@ -18,6 +19,9 @@ import java.util.stream.Collectors;
  */
 public class Archiver {
 
+	private OnProgressUpdate onProgressUpdate;
+	private CompressionLevel compressionLevel;
+
 	public Archiver() throws SevenZipNativeInitializationException {
 		SevenZip.initSevenZipFromPlatformJAR();
 	}
@@ -32,12 +36,12 @@ public class Archiver {
 		return getSupportedFormats().contains(format);
 	}
 
-	public boolean archive(File input, File output, ArchiveFormat outputFormat, OnProgressUpdate onProgressUpdate) throws IOException {
+	public boolean archive(File input, File output, ArchiveFormat outputFormat) throws IOException {
 		AtomicBoolean archivedSuccessfully = new AtomicBoolean(false);
 
 		IOutCreateArchive<IOutItemAllFormats> archive = SevenZip.openOutArchive(outputFormat);
 		if (archive instanceof IOutFeatureSetLevel) {
-			((IOutFeatureSetLevel) archive).setLevel(9);
+			((IOutFeatureSetLevel) archive).setLevel(compressionLevel.level);
 		}
 		if (archive instanceof IOutFeatureSetMultithreading) {
 			((IOutFeatureSetMultithreading) archive).setThreadCount(Runtime.getRuntime().availableProcessors());
@@ -62,5 +66,21 @@ public class Archiver {
 		}
 
 		return archivedSuccessfully.get();
+	}
+
+	public OnProgressUpdate getOnProgressUpdate() {
+		return onProgressUpdate;
+	}
+
+	public void setOnProgressUpdate(OnProgressUpdate onProgressUpdate) {
+		this.onProgressUpdate = onProgressUpdate;
+	}
+
+	public CompressionLevel getCompressionLevel() {
+		return compressionLevel;
+	}
+
+	public void setCompressionLevel(CompressionLevel compressionLevel) {
+		this.compressionLevel = compressionLevel;
 	}
 }

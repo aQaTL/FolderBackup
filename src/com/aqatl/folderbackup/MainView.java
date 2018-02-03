@@ -1,12 +1,10 @@
 package com.aqatl.folderbackup;
 
 import com.aqatl.folderbackup.archive.Archiver;
+import com.aqatl.folderbackup.archive.CompressionLevel;
 import javafx.concurrent.Task;
 import javafx.fxml.FXML;
-import javafx.scene.control.Alert;
-import javafx.scene.control.Button;
-import javafx.scene.control.ProgressBar;
-import javafx.scene.control.TextField;
+import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
@@ -19,10 +17,7 @@ import net.sf.sevenzipjbinding.ArchiveFormat;
 import java.io.File;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.TreeMap;
+import java.util.*;
 
 import static net.sf.sevenzipjbinding.ArchiveFormat.SEVEN_ZIP;
 
@@ -39,6 +34,8 @@ public class MainView {
 	private Button inputSelectButton;
 	@FXML
 	private Button outputSelectButton;
+	@FXML
+	private ComboBox<CompressionLevel> compressionLevelBox;
 	@FXML
 	private Button archiveButton;
 	@FXML
@@ -59,7 +56,6 @@ public class MainView {
 	public void init(Stage stage, Archiver archiver, Properties props) throws Exception {
 		this.stage = stage;
 		this.archiver = archiver;
-
 		this.properties = props;
 
 		fileChooser = new FileChooser();
@@ -97,6 +93,20 @@ public class MainView {
 		}
 		outputPath.setEditable(false);
 
+		compressionLevelBox.getItems().setAll(CompressionLevel.values());
+		compressionLevelBox.getItems().remove(CompressionLevel.DEFAULT);
+
+		compressionLevelBox.getSelectionModel().select(
+				Arrays.stream(CompressionLevel.values()).
+						filter(level ->
+								level.level == Integer.parseInt(properties.getProperty("last-compression-level"))).
+						findFirst().
+						get());
+
+		compressionLevelBox.getSelectionModel().selectedItemProperty().addListener(
+				(observable, oldValue, newValue) -> properties.setProperty(
+						"last-compression-level", Integer.toString(newValue.level)));
+
 		stage.setOnCloseRequest(event -> {
 			if (archiveTask != null) {
 				archiveTask.cancel();
@@ -131,7 +141,8 @@ public class MainView {
 		}
 	}
 
-	private enum ArchiveButtonMode { START, STOP };
+	private enum ArchiveButtonMode {START, STOP}
+
 	private ArchiveButtonMode archiveButtonMode = ArchiveButtonMode.START;
 
 	@FXML
@@ -141,12 +152,12 @@ public class MainView {
 				startArchiving();
 				archiveButton.setText("Stop");
 				archiveButtonMode = ArchiveButtonMode.STOP;
-			break;
+				break;
 			case STOP:
 				stopArchiving();
 				archiveButton.setText("Archive");
 				archiveButtonMode = ArchiveButtonMode.START;
-			break;
+				break;
 		}
 	}
 
@@ -154,15 +165,17 @@ public class MainView {
 		archiveTask = new Task<Boolean>() {
 			@Override
 			protected Boolean call() throws Exception {
+				archiver.setOnProgressUpdate(this::updateProgress);
+				archiver.setCompressionLevel(compressionLevelBox.getValue());
 				return archiver.archive(
 						inputFile, outputFile,
-						selectedArchiveFormat(),
-						this::updateProgress);
+						selectedArchiveFormat());
 			}
 		};
 		archiveTask.setOnSucceeded(workerStateEvent -> {
 			archivingProgressBar.progressProperty().unbind();
 			showArchivingCompletedAlert(archiveTask.getValue());
+			archiveButton.setText("Archive");
 		});
 		archiveTask.setOnFailed(workerStateEvent -> {
 			archivingProgressBar.progressProperty().unbind();
